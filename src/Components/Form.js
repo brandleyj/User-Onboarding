@@ -3,36 +3,45 @@ import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 
-const UserForm = ({ values, errors, touched }) => {
+const UserForm = ({ values, errors, touched, status }) => {
 	const [form, setForm] = useState([]);
 	useEffect(() => {
-		if (status) {
-			setForm([...form, status]);
-		}
+		status && setForm(form => [...form, status]);
 	}, [status]);
 	return (
-		<Form>
-			<Field type="text" name="name" placeholder="Name" />
-			{touched.name && errors.name && <p className="error">{errors.name}</p>}
+		<div>
+			<Form>
+				<Field type="text" name="name" placeholder="Name" />
+				{touched.name && errors.name && <p className="error">{errors.name}</p>}
 
-			<Field type="text" name="email" placeholder="Email" />
-			{touched.email && errors.email && <p className="error">{errors.email}</p>}
+				<Field type="text" name="email" placeholder="Email" />
+				{touched.email && errors.email && (
+					<p className="error">{errors.email}</p>
+				)}
 
-			<Field type="password" name="password" placeholder="Password" />
-			{touched.password && errors.password && (
-				<p className="error">{errors.password}</p>
-			)}
+				<Field type="password" name="password" placeholder="Password" />
+				{touched.password && errors.password && (
+					<p className="error">{errors.password}</p>
+				)}
 
-			<label>
-				<Field
-					htmlFor="Terms of Service"
-					type="checkbox"
-					name="termsOfService"
-					checked={values.termsOfService}
-				/>
-			</label>
-			<button>Submit</button>
-		</Form>
+				<label>
+					<Field
+						type="checkbox"
+						name="termsOfService"
+						checked={values.termsOfService}
+					/>
+					Read Terms of Service
+				</label>
+				<button type="submit">Submit</button>
+			</Form>
+			{form.map(forms => (
+				<ul key={forms.id}>
+					<li>Name: {forms.name}</li>
+					<li>Email: {forms.email}</li>
+					<li>Password: {forms.password}</li>
+				</ul>
+			))}
+		</div>
 	);
 };
 const FormikUserForm = withFormik({
@@ -50,8 +59,9 @@ const FormikUserForm = withFormik({
 		password: Yup.string().required("You must enter a password")
 	}),
 
-	handleSubmit(values, {}) {
+	handleSubmit(values, { setStatus }) {
 		axios.post("https://reqres.in/api/users/", values).then(res => {
+			setStatus(res.data);
 			console.log(res);
 		});
 	}
